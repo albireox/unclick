@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "unclick"
+version = "0.1.0b1"
+description = "A reverse parser for the click CLI library"
+authors = ["José Sánchez-Gallego <gallegoj@uw.edu>"]
+license = "BSD 3-clause"
+readme = "README.md"
+packages = [
+    { include = "unclick", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.0.0"
+
+[tool.poetry.dev-dependencies]
+ipython = ">=8.0.0"
+flake8 = ">=3.7.9"
+pytest = ">=5.2.2"
+pytest-asyncio = ">=0.10.0"
+pytest-cov = ">=2.8.1"
+pytest-mock = ">=1.13.0"
+pytest-sugar = ">=0.9.2"
+isort = ">=4.3.21"
+codecov = ">=2.0.15"
+coverage = {version = ">=5.0", extras = ["toml"]}
+ipdb = ">=0.12.3"
+black = ">=20.8b1"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+fast = true
+
+[tool.isort]
+profile = "black"
+sections = ["FUTURE", "STDLIB", "TYPING", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+default_section = "THIRDPARTY"
+known_first_party = "unclick"
+known_typing = ["typing"]
+lines_after_imports = 2
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
