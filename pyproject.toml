@@ -12,6 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.10"
 click = "^8.0.0"
+jsonschema = "^4.17.3"
 
 [tool.poetry.dev-dependencies]
 ipython = ">=8.0.0"
