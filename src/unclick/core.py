@@ -81,14 +81,10 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
 
     elif param_type == "bool":
         if is_argument:
-            raise TypeError(
-                f"Cannot process param {name!r} of type bool which is an argument."
-            )
+            raise TypeError(f"Cannot process argument {name!r} of type bool.")
 
         if not param_info["is_flag"]:
-            raise TypeError(
-                f"Cannot process param {name!r} of type bool which is not a flag."
-            )
+            raise TypeError(f"Cannot process non-flag option {name!r} of type bool.")
 
         if value == default:
             return ""
