@@ -101,10 +101,15 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
     value_str: str
 
     if param_type in ["string", "int", "float"]:
-        if isinstance(value, (tuple, list)):
-            return " ".join(map(str, value))
+        if param_type == "string":
+            map_func = json.dumps  # For strings, always escape in quotes.
+        else:
+            map_func = str
 
-        value_str = str(value)
+        if isinstance(value, (tuple, list)):
+            return " ".join(map(map_func, value))
+
+        value_str = map_func(value)
         if not is_argument and value == default:
             return ""
 

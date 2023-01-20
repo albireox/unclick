@@ -28,7 +28,7 @@ def _command_invoke(command: click.Command, string: str):
     with unittest.mock.patch.object(command, "callback") as mock_callback:
         runner = CliRunner()
 
-        result = runner.invoke(command, string.split()[1:])
+        result = runner.invoke(command, string[len(command.name or "") :])
         assert result.exit_code == 0
 
         mock_callback.assert_called()
@@ -48,3 +48,10 @@ def test_callback2():
 
     mock_callback = _command_invoke(my_command1, command_string)
     mock_callback.assert_called_once_with(arg1="hi", arg2=None, flag1=False)
+
+
+def test_callback_string_with_spaces():
+    command_string = build_command_string(my_command1, "hi how are you")
+
+    mock_callback = _command_invoke(my_command1, command_string)
+    mock_callback.assert_called_once_with(arg1="hi how are you", arg2=None, flag1=False)

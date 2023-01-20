@@ -49,33 +49,33 @@ def test_build_command():
     assert isinstance(json, str)
 
     command_string = build_command_string(json, "hi", 1)
-    assert command_string == "test-command hi 1"
+    assert command_string == 'test-command "hi" 1'
 
     command_string = build_command_string(json, "hi")
-    assert command_string == "test-command hi"
+    assert command_string == 'test-command "hi"'
 
     command_string = build_command_string(command, arg1="hi", arg2=4)
-    assert command_string == "test-command hi 4"
+    assert command_string == 'test-command "hi" 4'
 
     command_string = build_command_string(command, arg1="hi", option2=5)
-    assert command_string == "test-command --option2 5 hi"
+    assert command_string == 'test-command --option2 5 "hi"'
 
     command_string = build_command_string(command, arg1="hi", option2=3.0)
-    assert command_string == "test-command hi"
+    assert command_string == 'test-command "hi"'
 
 
 @pytest.mark.parametrize(
     "kwargs,command_string",
     [
-        ({"flag1": False}, "test-command hi"),
-        ({"flag1": True}, "test-command --flag1 hi"),
-        ({"shout": True}, "test-command --shout hi"),
-        ({"shout": False}, "test-command hi"),
-        ({"shout2": True}, "test-command --shout2 hi"),
-        ({"shout2": False}, "test-command hi"),
-        ({"shout3": True}, "test-command hi"),
-        ({"shout3": False}, "test-command --no-shout3 hi"),
-        ({"flag1": None, "shout": None, "shout2": None}, "test-command hi"),
+        ({"flag1": False}, 'test-command "hi"'),
+        ({"flag1": True}, 'test-command --flag1 "hi"'),
+        ({"shout": True}, 'test-command --shout "hi"'),
+        ({"shout": False}, 'test-command "hi"'),
+        ({"shout2": True}, 'test-command --shout2 "hi"'),
+        ({"shout2": False}, 'test-command "hi"'),
+        ({"shout3": True}, 'test-command "hi"'),
+        ({"shout3": False}, 'test-command --no-shout3 "hi"'),
+        ({"flag1": None, "shout": None, "shout2": None}, 'test-command "hi"'),
     ],
 )
 def test_boolean_flags(kwargs: dict, command_string: str):
