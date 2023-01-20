@@ -41,7 +41,7 @@ known_typing = ["typing"]
 lines_after_imports = 2
 
 [tool.pytest.ini_options]
-addopts = "--cov unclick --cov-report xml --cov-report html --cov-report term -W ignore"
+addopts = "--cov unclick --cov-report xml --cov-report html --cov-report term"
 asyncio_mode = "auto"
 
 [tool.coverage.run]
