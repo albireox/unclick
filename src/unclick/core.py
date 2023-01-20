@@ -39,7 +39,10 @@ def command_to_json(command: click.Command) -> str:
 def _check_type(value: t.Any, param_info: dict[str, t.Any]):
     """Checks that a value has the correct type for a parameter."""
 
+    name = param_info["name"]
     param_type = param_info["type"]["param_type"].lower()
+    nargs = param_info["nargs"]
+
     python_type: type | tuple[type, ...]
 
     if value is None:
@@ -53,11 +56,32 @@ def _check_type(value: t.Any, param_info: dict[str, t.Any]):
         python_type = int
     elif param_type == "float":
         python_type = (float, int)
+    elif param_type == "tuple":
+        if not isinstance(value, (list, tuple)):
+            raise ValueError(f"Value for parameter {name!r} must be a tuple.")
+        param_len = len(param_info["type"]["types"])
+        if param_len != len(value):
+            raise ValueError(f"Value for parameter {name!r} must have len {param_len}.")
+        for ii, vv in enumerate(value):
+            vv_info = param_info.copy()
+            vv_info["nargs"] = 1
+            vv_info["type"] = param_info["type"]["types"][ii]
+            _check_type(vv, vv_info)
+        return
     else:
         raise TypeError(f"click type {param_type} not supported.")
 
-    if not issubclass(type(value), python_type):
-        raise TypeError(f"Value {value!r} does not match parameter type {param_type}.")
+    test_values = [value] if not isinstance(value, (tuple, list)) else value
+
+    if nargs != -1 and len(test_values) != nargs:
+        raise ValueError(f"Invalid number of arguments for parameter {name!r}.")
+
+    for test_value in test_values:
+        if not issubclass(type(test_value), python_type):
+            raise TypeError(
+                f"Value {test_value!r} does not match type {param_type!r} "
+                f"for parameter {name!r}."
+            )
 
 
 def parse_value(value: t.Any, param_info: dict[str, t.Any]):
@@ -77,6 +101,9 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
     value_str: str
 
     if param_type in ["string", "int", "float"]:
+        if isinstance(value, (tuple, list)):
+            return " ".join(map(str, value))
+
         value_str = str(value)
         if not is_argument and value == default:
             return ""
@@ -99,6 +126,9 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
                 return param_info["secondary_opts"][0]
 
         return opts[0]
+
+    elif param_type == "tuple":
+        value_str = " ".join(map(str, value))
 
     else:
         raise NotImplementedError(

@@ -30,6 +30,18 @@ def command_required(required: int):
     return
 
 
+@click.command()
+@click.argument("ARG", type=int, nargs=2)
+def command_nargs2(arg: tuple[int, int]):
+    return
+
+
+@click.command()
+@click.option("--tuple-option", type=click.Tuple([str, int]))
+def command_tuple(tuple_option: tuple[str, int]):
+    return
+
+
 def test_build_command():
     json = command_to_json(command)
     assert isinstance(json, str)
@@ -72,7 +84,8 @@ def test_mismatched_type():
     with pytest.raises(TypeError) as err:
         build_command_string(command, "hi", option2="bye")
 
-    assert str(err.value) == "Value 'bye' does not match parameter type float."
+    err_msg = "Value 'bye' does not match type 'float' for parameter 'option2'."
+    assert str(err.value) == err_msg
 
 
 def test_none_as_arg():
@@ -106,3 +119,31 @@ def test_missing_required_option():
 def test_required_option():
     command_string = build_command_string(command_required, required=5)
     assert command_string == "command-required --required 5"
+
+
+def test_narg2():
+    command_string = build_command_string(command_nargs2, arg=[1, 2])
+    assert command_string == "command-nargs2 1 2"
+
+
+def test_narg2_incorrect_length():
+    with pytest.raises(ValueError) as err:
+        build_command_string(command_nargs2, arg=[1, 2, 3])
+    assert str(err.value) == "Invalid number of arguments for parameter 'arg'."
+
+
+def test_tuple_param():
+    command_string = build_command_string(command_tuple, tuple_option=("bye", 3))
+    assert command_string == "command-tuple --tuple-option bye 3"
+
+
+def test_tuple_param_bad_format():
+    with pytest.raises(ValueError) as err:
+        build_command_string(command_tuple, tuple_option="bye,3")
+    assert str(err.value) == "Value for parameter 'tuple_option' must be a tuple."
+
+
+def test_tuple_param_bad_length():
+    with pytest.raises(ValueError) as err:
+        build_command_string(command_tuple, tuple_option=["hi", 3, "bye"])
+    assert str(err.value) == "Value for parameter 'tuple_option' must have len 2."
