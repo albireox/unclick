@@ -30,8 +30,20 @@ def command_to_json(command: click.Command) -> str:
 
     click_params = command.params
 
-    unclick_json = {"name": "", "parameters": {}, "required": [], "arguments": []}
+    unclick_json = {
+        "name": "",
+        "parameters": {},
+        "required": [],
+        "arguments": [],
+        "help": "",
+        "usage": "",
+    }
+
     unclick_json["name"] = command.name
+    unclick_json["help"] = command.help
+
+    ctx = click.Context(command)
+    unclick_json["usage"] = ctx.get_help()
 
     for cparam in click_params:
         unclick_json["parameters"][cparam.name] = cparam.to_info_dict()
@@ -295,6 +307,17 @@ def create_function(
 ):
     """Creates a function with a signature matching a command callback."""
 
-    sign = create_signature(command_info)
+    if isinstance(command_info, click.Command):
+        command_info = command_to_json(command_info)
 
-    return makefun.create_function(sign, func, func_name=func_name)
+    info_dict: dict[str, t.Any]
+
+    if isinstance(command_info, str):
+        info_dict = json.loads(command_info)
+    else:
+        info_dict = command_info
+
+    sign = create_signature(info_dict)
+    usage = info_dict["usage"]
+
+    return makefun.create_function(sign, func, func_name=func_name, doc=usage)

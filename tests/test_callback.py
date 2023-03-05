@@ -17,8 +17,10 @@ from unclick.core import build_command_string
 @click.command()
 @click.argument("ARG1", type=str)
 @click.argument("ARG2", type=int, required=False)
-@click.option("--flag1", "-f", is_flag=True)
+@click.option("--flag1", "-f", is_flag=True, help="A flag.")
 def my_command1(*args, **kwrgs):
+    """Test command."""
+
     return
 
 
