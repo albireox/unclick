@@ -12,6 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.8"
 click = "^8.0.0"
+makefun = "^1.15.1"
 
 [tool.poetry.dev-dependencies]
 ipython = ">=8.0.0"
@@ -29,7 +30,7 @@ black = ">=20.8b1"
 
 [tool.black]
 line-length = 88
-target-version = ['py310']
+target-version = ['py311']
 fast = true
 
 [tool.isort]

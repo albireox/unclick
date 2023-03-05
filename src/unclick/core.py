@@ -8,14 +8,21 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 
 import typing as t
 
 import click
+import makefun
 
 
-__all__ = ["command_to_json", "build_command_string"]
+__all__ = [
+    "command_to_json",
+    "build_command_string",
+    "create_signature",
+    "create_function",
+]
 
 
 def command_to_json(command: click.Command) -> str:
@@ -246,3 +253,48 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
     )
 
     return command_string.strip()
+
+
+def create_signature(command_info: dict | str | click.Command):
+    """Creates a `~inspect.Signature` object matching a command callback."""
+
+    if isinstance(command_info, click.Command):
+        command_info = command_to_json(command_info)
+
+    info_dict: dict[str, t.Any]
+
+    if isinstance(command_info, str):
+        info_dict = json.loads(command_info)
+    else:
+        info_dict = command_info
+
+    args: list[inspect.Parameter] = []
+    kwargs: list[inspect.Parameter] = []
+
+    for p_name, p_data in info_dict["parameters"].items():
+        if p_name in info_dict["arguments"] and p_name in info_dict["required"]:
+            args.append(inspect.Parameter(p_name, inspect.Parameter.POSITIONAL_ONLY))
+        else:
+            kwargs.append(
+                inspect.Parameter(
+                    p_name,
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    default=p_data["default"],
+                ),
+            )
+
+    parameters = args + kwargs
+
+    return inspect.Signature(parameters)
+
+
+def create_function(
+    command_info: dict | str | click.Command,
+    func: t.Callable,
+    func_name: str,
+):
+    """Creates a function with a signature matching a command callback."""
+
+    sign = create_signature(command_info)
+
+    return makefun.create_function(sign, func, func_name=func_name)
