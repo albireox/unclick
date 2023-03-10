@@ -5,6 +5,9 @@ on:
 
 name: Create Release
 
+permissions:
+  contents: write
+
 jobs:
   build_on_macos:
     name: Build macOS wheels
