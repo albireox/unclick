@@ -28,31 +28,36 @@ __all__ = [
 def command_to_json(command: click.Command) -> str:
     """Generates a JSON representation of a click command."""
 
-    click_params = command.params
-
-    unclick_json = {
-        "name": "",
-        "parameters": {},
-        "required": [],
-        "arguments": [],
-        "help": "",
-        "usage": "",
-    }
-
-    unclick_json["name"] = command.name
-    unclick_json["help"] = command.help
-
     ctx = click.Context(command)
-    unclick_json["usage"] = ctx.get_help()
+    return json.dumps(ctx.to_info_dict()["command"], indent=2)
 
-    for cparam in click_params:
-        unclick_json["parameters"][cparam.name] = cparam.to_info_dict()
-        if cparam.required:
-            unclick_json["required"].append(cparam.name)
-        if cparam.param_type_name == "argument":
-            unclick_json["arguments"].append(cparam.name)
 
-    return json.dumps(unclick_json, indent=2)
+def _add_extra_info(command_info: dict):
+    """Adds ``required`` and ``arguments`` keys to the command info."""
+
+    command_info_copy = command_info.copy()
+
+    command_info_copy["required"] = []
+    command_info_copy["arguments"] = []
+
+    for param_info in command_info_copy["params"]:
+        name = param_info["name"]
+        if param_info["param_type_name"] == "argument":
+            command_info_copy["arguments"].append(name)
+        if param_info["required"]:
+            command_info_copy["required"].append(name)
+
+    return command_info_copy
+
+
+def _get_param_info(command_info: dict, param_name: str):
+    """Returns the data for a parameter."""
+
+    for info in command_info["params"]:
+        if info["name"] == param_name:
+            return info
+
+    raise ValueError("Parameter not found.")
 
 
 def _check_type(value: t.Any, param_info: dict[str, t.Any]):
@@ -195,15 +200,20 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
 
     command_string_template = "{command_name}{options}{arguments}"
 
+    # Add required and arguments sections.
+    info_dict = _add_extra_info(info_dict)
+
     # First assign positional arguments to click command arguments.
     arguments = []
 
     n_arguments = len(info_dict["arguments"])
-    args_required = [
-        arg
-        for arg in info_dict["arguments"]
-        if info_dict["parameters"][arg]["required"] is True
-    ]
+
+    args_required = []
+    for arg in info_dict["arguments"]:
+        param_info = _get_param_info(info_dict, arg)
+        if param_info is None or not param_info["required"]:
+            continue
+        args_required.append(param_info["name"])
 
     if n_arguments < len(args):
         raise ValueError("More arguments provided than expected.")
@@ -226,7 +236,7 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
                     else:
                         continue
 
-            param_info = info_dict["parameters"][arg_name]
+            param_info = _get_param_info(info_dict, arg_name)
             _check_type(value, param_info)
             arguments.append(parse_value(value, param_info))
 
@@ -235,12 +245,12 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
 
     options = []
 
-    for param_name in info_dict["parameters"]:
+    for param_info in info_dict["params"]:
+        param_name = param_info["name"]
+
         if param_name in info_dict["arguments"]:
             # Already dealt with.
             continue
-
-        param_info = info_dict["parameters"][param_name]
 
         if param_name not in kwargs:
             if param_info["required"] is True:
@@ -280,10 +290,17 @@ def create_signature(command_info: dict | str | click.Command):
     else:
         info_dict = command_info
 
+    info_dict = _add_extra_info(info_dict)
+
     args: list[inspect.Parameter] = []
     kwargs: list[inspect.Parameter] = []
 
-    for p_name, p_data in info_dict["parameters"].items():
+    for p_data in info_dict["params"]:
+        p_name = p_data["name"]
+
+        if p_name == "help":
+            continue
+
         if p_name in info_dict["arguments"] and p_name in info_dict["required"]:
             args.append(inspect.Parameter(p_name, inspect.Parameter.POSITIONAL_ONLY))
         else:
@@ -318,6 +335,10 @@ def create_function(
         info_dict = command_info
 
     sign = create_signature(info_dict)
-    usage = info_dict["usage"]
 
-    return makefun.create_function(sign, func, func_name=func_name, doc=usage)
+    return makefun.create_function(
+        sign,
+        func,
+        func_name=func_name,
+        doc=info_dict["help"],
+    )
