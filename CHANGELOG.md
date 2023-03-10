@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0b3 - Mar 9, 2023
+
+### ✨ Improved
+
+* Include all the information in `Command.to_info_dict()`.
+
+
 ## 0.1.0b2 - Mar 4, 2023
 
 ### 🚀 New
