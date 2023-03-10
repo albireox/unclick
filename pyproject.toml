@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "unclick"
-version = "0.1.0b3"
+version = "0.1.0b4"
 description = "A reverse parser for the click CLI library"
 authors = ["José Sánchez-Gallego <gallegoj@uw.edu>"]
 license = "BSD 3-clause"
