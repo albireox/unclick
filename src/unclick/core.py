@@ -222,6 +222,8 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
     # First assign positional arguments to click command arguments.
     arguments = []
 
+    kwargs_consumed = []
+
     n_arguments = len(info_dict["arguments"])
 
     args_required = []
@@ -246,6 +248,7 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
                 # has been passed in as a keyword argument.
                 if arg_name in kwargs:
                     value = kwargs[arg_name]
+                    kwargs_consumed.append(arg_name)
                 else:
                     if arg_name in args_required:
                         raise ValueError(f"Missing value for argument {arg_name!r}.")
@@ -285,6 +288,12 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
 
         if parsed != "":
             options.append(parsed)
+
+        kwargs_consumed.append(param_name)
+
+    for kw in kwargs:
+        if kw not in kwargs_consumed:
+            raise KeyError(f"Keyword argument {kw!r} is invalid.")
 
     options_str = "" if len(options) == 0 else (" " + " ".join(options))
     arguments_str = "" if len(arguments) == 0 else (" " + " ".join(arguments))

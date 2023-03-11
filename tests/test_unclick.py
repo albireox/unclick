@@ -191,3 +191,9 @@ def test_flag_value_with_flag():
 def test_flag_value_with_groupper():
     command_string = build_command_string(command_flag_value, flavour="dark")
     assert command_string == "command-flag-value --dark"
+
+
+def test_invalid_kwarg():
+    with pytest.raises(KeyError) as err:
+        build_command_string(command_flag_value, a=5)
+    assert str(err.value) == "\"Keyword argument 'a' is invalid.\""

@@ -6,6 +6,10 @@
 
 * Support for string flags.
 
+### ✨ Improved
+
+* Passing and invalid keyword argument to `build_command_string()` raises a `KeyError`.
+
 
 ## 0.1.0b3 - Mar 9, 2023
 
