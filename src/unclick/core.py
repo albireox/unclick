@@ -155,7 +155,7 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
 
     elif param_type == "bool":
         if is_argument:
-            raise TypeError(f"Cannot process argument {name!r} of type bool.")
+            return str(int(value))
 
         if not param_info["is_flag"]:
             raise TypeError(f"Cannot process non-flag option {name!r} of type bool.")
@@ -325,8 +325,11 @@ def create_signature(command_info: dict | str | click.Command):
     args: list[inspect.Parameter] = []
     kwargs: list[inspect.Parameter] = []
 
+    consumed = []
     for p_data in info_dict["params"]:
         p_name = p_data["name"]
+        if p_name in consumed:
+            continue
 
         if p_name == "help":
             continue
@@ -341,6 +344,8 @@ def create_signature(command_info: dict | str | click.Command):
                     default=p_data["default"],
                 ),
             )
+
+        consumed.append(p_name)
 
     parameters = args + kwargs
 
