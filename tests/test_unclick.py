@@ -44,6 +44,33 @@ def command_tuple(tuple_option: tuple[str, int]):
     return
 
 
+@click.command()
+@click.option(
+    "--bias",
+    "flavour",
+    flag_value="bias",
+    default=True,
+    show_default=True,
+    help="Take a bias.",
+)
+@click.option(
+    "--dark",
+    "flavour",
+    flag_value="dark",
+    default=False,
+    help="Take a dark.",
+)
+@click.option(
+    "--flat",
+    "flavour",
+    flag_value="flat",
+    default=False,
+    help="Take a flat.",
+)
+def command_flag_value(flavour: str = "bias"):
+    return
+
+
 def test_build_command():
     json = command_to_json(command)
     assert isinstance(json, str)
@@ -149,3 +176,18 @@ def test_tuple_param_bad_length():
     with pytest.raises(ValueError) as err:
         build_command_string(command_tuple, tuple_option=["hi", 3, "bye"])
     assert str(err.value) == "Value for parameter 'tuple_option' must have len 2."
+
+
+def test_flag_value_default():
+    command_string = build_command_string(command_flag_value, bias=True)
+    assert command_string == "command-flag-value"
+
+
+def test_flag_value_with_flag():
+    command_string = build_command_string(command_flag_value, flat=True)
+    assert command_string == "command-flag-value --flat"
+
+
+def test_flag_value_with_groupper():
+    command_string = build_command_string(command_flag_value, flavour="dark")
+    assert command_string == "command-flag-value --dark"

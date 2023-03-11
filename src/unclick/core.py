@@ -74,6 +74,12 @@ def _check_type(value: t.Any, param_info: dict[str, t.Any]):
 
     if param_type == "string":
         python_type = str
+
+        flag_is_str = isinstance(param_info.get("flag_value", None), str)
+        value_is_bool = isinstance(value, bool)
+        if flag_is_str and value_is_bool:
+            # If the flag value is a string, then it ok.
+            return
     elif param_type == "bool":
         python_type = bool
     elif param_type == "int":
@@ -125,6 +131,16 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
     value_str: str
 
     if param_type in ["string", "int", "float"]:
+        # For cases when the flag is not boolean.
+        if param_info.get("is_flag", False):
+            if isinstance(value, str):
+                if value == param_info["flag_value"]:
+                    return opts[0]
+            elif isinstance(value, bool):
+                if value != param_info["default"]:
+                    return opts[0]
+            return ""
+
         if param_type == "string":
             map_func = json.dumps  # For strings, always escape in quotes.
         else:
@@ -255,6 +271,11 @@ def build_command_string(command_info: dict | str | click.Command, *args, **kwar
         if param_name not in kwargs:
             if param_info["required"] is True:
                 raise ValueError(f"Parameter {param_name!r} is required.")
+            elif (
+                isinstance(param_info.get("flag_value", None), str)
+                and param_info["flag_value"] in kwargs
+            ):
+                param_name = param_info["flag_value"]
             else:
                 continue
 

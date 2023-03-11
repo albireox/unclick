@@ -1,5 +1,12 @@
 # Changelog
 
+## Next version
+
+### 🚀 New
+
+* Support for string flags.
+
+
 ## 0.1.0b3 - Mar 9, 2023
 
 ### ✨ Improved
