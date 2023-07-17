@@ -98,6 +98,11 @@ def _check_type(value: t.Any, param_info: dict[str, t.Any]):
             vv_info["type"] = param_info["type"]["types"][ii]
             _check_type(vv, vv_info)
         return
+    elif param_type == "choice":
+        choices = param_info["type"]["choices"]
+        if value not in choices:
+            raise ValueError(f"Value {value} is not one the allowed choices {choices}.")
+        return
     else:
         raise TypeError(f"click type {param_type} not supported.")
 
@@ -130,7 +135,7 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
 
     value_str: str
 
-    if param_type in ["string", "int", "float"]:
+    if param_type in ["string", "int", "float", "choice"]:
         # For cases when the flag is not boolean.
         if param_info.get("is_flag", False):
             if isinstance(value, str):

@@ -71,6 +71,12 @@ def command_flag_value(flavour: str = "bias"):
     return
 
 
+@click.command()
+@click.option("--car", type=click.Choice(["toyota", "subaru", "honda"]))
+def command_choice(car: str | None = None):
+    return
+
+
 def test_build_command():
     json = command_to_json(command)
     assert isinstance(json, str)
@@ -197,3 +203,14 @@ def test_invalid_kwarg():
     with pytest.raises(KeyError) as err:
         build_command_string(command_flag_value, a=5)
     assert str(err.value) == "\"Keyword argument 'a' is invalid.\""
+
+
+def test_command_with_choice():
+    command_string = build_command_string(command_choice, car="toyota")
+    assert command_string == "command-choice --car toyota"
+
+
+def test_invalid_choice():
+    with pytest.raises(ValueError) as err:
+        build_command_string(command_choice, car="ford")
+    assert "Value ford is not one the allowed choices" in str(err.value)
