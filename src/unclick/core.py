@@ -190,23 +190,22 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
         value_str = " ".join(map(str, value))
 
     else:
-        print(isinstance(value, bool))
         if value is True or value is False:
-            param_info["type"]["param_type"] = 'bool'
+            param_info["type"]["param_type"] = "bool"
             return parse_value(value, param_info)
         elif isinstance(value, int):
-            param_info["type"]["param_type"] = 'int'
+            param_info["type"]["param_type"] = "int"
             return parse_value(value, param_info)
         elif isinstance(value, float):
-            param_info["type"]["param_type"] = 'float'
+            param_info["type"]["param_type"] = "float"
             return parse_value(value, param_info)
         elif isinstance(value, str):
-            param_info["type"]["param_type"] = 'string'
+            param_info["type"]["param_type"] = "string"
             return parse_value(value, param_info)
         else:
             raise NotImplementedError(
-            f"Cannot parse value for param {name!r} of type {param_type!r}."
-        )
+                f"Cannot parse value for param {name!r} of type {param_type!r}."
+            )
 
     if is_argument:
         return value_str

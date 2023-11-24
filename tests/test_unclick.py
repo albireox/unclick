@@ -7,13 +7,14 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 
 from __future__ import annotations
+
 from typing import Any
 
 import click
 import pytest
 
 from unclick import build_command_string, command_to_json
-from unclick.core import parse_value, _check_type
+from unclick.core import _check_type, parse_value
 
 
 @click.command(name="test-command")
