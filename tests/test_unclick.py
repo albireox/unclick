@@ -7,11 +7,13 @@
 # @License: BSD 3-clause (http://www.opensource.org/licenses/BSD-3-Clause)
 
 from __future__ import annotations
+from typing import Any
 
 import click
 import pytest
 
 from unclick import build_command_string, command_to_json
+from unclick.core import parse_value, _check_type
 
 
 @click.command(name="test-command")
@@ -214,3 +216,65 @@ def test_invalid_choice():
     with pytest.raises(ValueError) as err:
         build_command_string(command_choice, car="ford")
     assert "Value ford is not one the allowed choices" in str(err.value)
+
+
+@pytest.mark.parametrize(
+    ["value", "expected"],
+    [
+        (1, "--test 1"),
+        (1.1, "--test 1.1"),
+        ("blah", '--test "blah"'),
+        (True, "--test"),
+    ],
+)
+def test_parse_value_fallback(value: Any, expected: str):
+    param_info = {
+        "name": "test",
+        "type": {"param_type": "unknown"},
+        "param_type_name": "unknown",
+        "opts": ["--test"],
+    }
+
+    if value is True or value is False:
+        param_info["is_flag"] = True
+        param_info["secondary_opts"] = []
+
+    parsed = parse_value(value, param_info)
+
+    assert parsed == expected
+
+
+def test_parse_value_fallback_fails():
+    param_info = {
+        "name": "test",
+        "type": {"param_type": "unknown"},
+        "param_type_name": "unknown",
+        "opts": ["--test"],
+    }
+
+    with pytest.raises(NotImplementedError):
+        parse_value([], param_info)
+
+
+@pytest.mark.parametrize("value", [1, 1.1, "blah", True, False])
+def test_check_type_fallback(value: Any):
+    param_info = {
+        "name": "test",
+        "type": {"param_type": "unknown"},
+        "param_type_name": "unknown",
+        "nargs": 1,
+    }
+
+    _check_type(value, param_info)
+
+
+def test_chec_type_fallback_fails():
+    param_info = {
+        "name": "test",
+        "type": {"param_type": "unknown"},
+        "param_type_name": "unknown",
+        "nargs": 1,
+    }
+
+    with pytest.raises(TypeError):
+        _check_type([], param_info)

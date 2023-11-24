@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0 - November 24, 2023
+
+### ✨ Improved
+
+* Add fallback options for unkown parameter types.
+
+
 ## 0.1.0b5 - July 16, 2023
 
 ### 🚀 New

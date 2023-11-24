@@ -104,7 +104,16 @@ def _check_type(value: t.Any, param_info: dict[str, t.Any]):
             raise ValueError(f"Value {value} is not one the allowed choices {choices}.")
         return
     else:
-        raise TypeError(f"click type {param_type} not supported.")
+        if value is True or value is False:
+            python_type = bool
+        elif isinstance(value, int):
+            python_type = int
+        elif isinstance(value, float):
+            python_type = float
+        elif isinstance(value, str):
+            python_type = str
+        else:
+            raise TypeError(f"click type {param_type} not supported.")
 
     test_values = [value] if not isinstance(value, (tuple, list)) else value
 
@@ -181,7 +190,21 @@ def parse_value(value: t.Any, param_info: dict[str, t.Any]):
         value_str = " ".join(map(str, value))
 
     else:
-        raise NotImplementedError(
+        print(isinstance(value, bool))
+        if value is True or value is False:
+            param_info["type"]["param_type"] = 'bool'
+            return parse_value(value, param_info)
+        elif isinstance(value, int):
+            param_info["type"]["param_type"] = 'int'
+            return parse_value(value, param_info)
+        elif isinstance(value, float):
+            param_info["type"]["param_type"] = 'float'
+            return parse_value(value, param_info)
+        elif isinstance(value, str):
+            param_info["type"]["param_type"] = 'string'
+            return parse_value(value, param_info)
+        else:
+            raise NotImplementedError(
             f"Cannot parse value for param {name!r} of type {param_type!r}."
         )
 
